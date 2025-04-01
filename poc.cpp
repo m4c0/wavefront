@@ -55,7 +55,8 @@ static unsigned load_model(voo::h2l_buffer & buf) {
     auto [x, xr] = vr.split(' ');
     auto [y, yr] = xr.split(' ');
     auto [z, zr] = yr.split(' ');
-    m += { .pos { atof(x), atof(y), atof(z) } };
+    dotz::vec3 p { atof(x), atof(y), atof(z) };
+    m += { .pos = p * 100.0 };
   });
 
   return count;
