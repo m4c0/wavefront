@@ -7,6 +7,7 @@ import dotz;
 import jojo;
 import jute;
 import sires;
+import sitime;
 import traits;
 import vee;
 import voo;
@@ -124,7 +125,9 @@ struct lng : public vapp {
       };
       load_indices(x_buf);
 
-      auto pl = vee::create_pipeline_layout();
+      auto pl = vee::create_pipeline_layout({
+        vee::vertex_push_constant_range<float>()
+      });
       auto gp = vee::create_graphics_pipeline({
         .pipeline_layout = *pl,
         .render_pass = dq.render_pass(),
@@ -143,6 +146,7 @@ struct lng : public vapp {
       });
 
       bool loaded = false;
+      sitime::stopwatch t {};
       extent_loop(dq.queue(), sw, [&] {
         sw.queue_one_time_submit(dq.queue(), [&](auto pcb) {
           if (!loaded) {
@@ -150,6 +154,7 @@ struct lng : public vapp {
             x_buf.setup_copy(*pcb);
             loaded = true;
           }
+          float ms = t.millis() / 1000.0;
 
           auto scb = sw.cmd_render_pass({ *pcb });
           vee::cmd_set_viewport(*pcb, sw.extent());
@@ -157,6 +162,7 @@ struct lng : public vapp {
           vee::cmd_bind_vertex_buffers(*pcb, 0, v_buf.local_buffer());
           vee::cmd_bind_index_buffer_u32(*pcb, x_buf.local_buffer());
           vee::cmd_bind_gr_pipeline(*pcb, *gp);
+          vee::cmd_push_vertex_constants(*pcb, *pl, &ms);
           vee::cmd_draw_indexed(*pcb, x_count);
         });
       });

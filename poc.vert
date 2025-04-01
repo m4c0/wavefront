@@ -2,6 +2,10 @@
 #extension GL_GOOGLE_include_directive : require
 #include "../glslinc/3d.glsl"
 
+layout(push_constant) uniform upc {
+  float time;
+};
+
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec2 txt;
 
@@ -29,7 +33,7 @@ void main() {
   vec4 cam = vec4(0, -2, -5, 0);
   mat4 proj = projection_matrix(fov_rad, aspect, near, far);
   mat4 view = view_matrix(cam.xyz, radians(cam.w), up);
-  mat4 modl = model_matrix(radians(-30));
+  mat4 modl = model_matrix(time * 6);
   vec4 pvec = vec4(pos.x, -pos.y, pos.z, 1);
   gl_Position = pvec * modl * view * proj;
   f_txt = txt;
