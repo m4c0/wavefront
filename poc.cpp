@@ -14,6 +14,7 @@ import vapp;
 
 struct vtx {
   dotz::vec3 pos;
+  dotz::vec2 txt;
 };
 
 struct invalid_number {};
@@ -133,6 +134,7 @@ struct lng : public vapp {
         },
         .attributes {
           vee::vertex_attribute_vec3(0, traits::offset_of(&vtx::pos)),
+          vee::vertex_attribute_vec2(0, traits::offset_of(&vtx::txt)),
         },
       });
 
