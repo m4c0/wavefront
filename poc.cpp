@@ -17,6 +17,7 @@ import vapp;
 struct vtx {
   dotz::vec3 pos;
   dotz::vec2 txt;
+  dotz::vec3 nrm;
 };
 
 struct invalid_number {};
@@ -48,19 +49,21 @@ static constexpr float atof(jute::view v) {
   return negative ? -res : res;
 }
 
-static vtx read_vertex(auto & pos, auto & txt, jute::view vtn) {
+static vtx read_vertex(auto & pos, auto & txt, auto & nrm, jute::view vtn) {
   auto [v, vr] = vtn.split('/');
   auto [t, tr] = vr.split('/');
-  // auto [n, nr] = tr.split('/');
+  auto [n, nr] = tr.split('/');
   
   return vtx {
     .pos = pos.seek(atoi(v) - 1),
     .txt = txt.seek(atoi(t) - 1),
+    .nrm = nrm.seek(atoi(n) - 1),
   };
 }
 static auto read_model() {
   hai::chain<dotz::vec3> pos { 10240 };
   hai::chain<dotz::vec2> txt { 10240 };
+  hai::chain<dotz::vec3> nrm { 10240 };
   hai::chain<vtx> vtx { 102400 };
 
   jojo::readlines(sires::real_path_name("model.obj"), [&](auto line) {
@@ -72,19 +75,23 @@ static auto read_model() {
       auto [z, zr] = yr.split(' ');
       dotz::vec3 p { atof(x), atof(y), atof(z) };
       pos.push_back(p * 100.0);
+    } else if (cmd == "vn") {
+      auto [z, zr] = yr.split(' ');
+      dotz::vec3 n { atof(x), atof(y), atof(z) };
+      nrm.push_back(n);
     } else if (cmd == "vt") {
       txt.push_back({ atof(x), atof(y) });
     } else if (cmd == "f") {
       auto [z, zr] = yr.split(' ');
       auto [w, wr] = zr.split(' ');
-      auto v0 = read_vertex(pos, txt, x);
-      auto v1 = read_vertex(pos, txt, y);
-      auto v2 = read_vertex(pos, txt, z);
+      auto v0 = read_vertex(pos, txt, nrm, x);
+      auto v1 = read_vertex(pos, txt, nrm, y);
+      auto v2 = read_vertex(pos, txt, nrm, z);
       vtx.push_back(v0);
       vtx.push_back(v1);
       vtx.push_back(v2);
       if (!w.size()) return;
-      auto v3 = read_vertex(pos, txt, w);
+      auto v3 = read_vertex(pos, txt, nrm, w);
       vtx.push_back(v0);
       vtx.push_back(v3);
       vtx.push_back(v2);
@@ -127,6 +134,7 @@ struct lng : public vapp {
         .attributes {
           vee::vertex_attribute_vec3(0, traits::offset_of(&vtx::pos)),
           vee::vertex_attribute_vec2(0, traits::offset_of(&vtx::txt)),
+          vee::vertex_attribute_vec3(0, traits::offset_of(&vtx::nrm)),
         },
       });
 

@@ -8,8 +8,10 @@ layout(push_constant) uniform upc {
 
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec2 txt;
+layout(location = 2) in vec3 nrm;
 
 layout(location = 0) out vec2 f_txt;
+layout(location = 1) out vec3 f_nrm;
 
 const float fov_rad = radians(90);
 const float aspect = 1;
@@ -37,4 +39,5 @@ void main() {
   vec4 pvec = vec4(pos.x, -pos.y, pos.z, 1);
   gl_Position = pvec * modl * view * proj;
   f_txt = txt;
+  f_nrm = nrm;
 }
