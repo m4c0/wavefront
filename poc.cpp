@@ -69,17 +69,21 @@ static auto count_points() {
 }
 
 static void load_model(voo::h2l_buffer & buf) {
-  unsigned count {};
-  voo::memiter<vtx> m { buf.host_memory(), &count };
+  voo::mapmem mm { buf.host_memory() };
+  auto * mv = static_cast<vtx *>(*mm);
+  auto * mt = static_cast<vtx *>(*mm);
 
   jojo::readlines(sires::real_path_name("model.obj"), [&](auto line) {
-    if (line[0] != 'v' || line[1] != ' ') return;
-    auto [v, vr] = line.split(' ');
+    auto [cmd, vr] = line.split(' ');
     auto [x, xr] = vr.split(' ');
     auto [y, yr] = xr.split(' ');
-    auto [z, zr] = yr.split(' ');
-    dotz::vec3 p { atof(x), atof(y), atof(z) };
-    m += { .pos = p * 100.0 };
+    if (cmd == "v") {
+      auto [z, zr] = yr.split(' ');
+      dotz::vec3 p { atof(x), atof(y), atof(z) };
+      (*mv++).pos = p * 100.0;
+    } else if (cmd == "vt") {
+      (*mt++).txt = { atof(x), atof(y) };
+    }
   });
 }
 
