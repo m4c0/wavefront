@@ -53,11 +53,25 @@ static unsigned load_model(voo::h2l_buffer & buf) {
   return count;
 }
 
+static unsigned load_indices(voo::h2l_buffer & buf) {
+  unsigned count {};
+  voo::memiter<vtx> m { buf.host_memory(), &count };
+
+  jojo::readlines(sires::real_path_name("model.obj"), [&](auto line) {
+    if (line[0] != 'f' || line[1] != ' ') return;
+  });
+
+  return count;
+}
+
 struct lng : public vapp {
   void run() override {
     main_loop("poc-voo", [&](auto & dq, auto & sw) {
-      voo::h2l_buffer buf { dq.physical_device(), sizeof(vtx) * 1024 };
-      int count = load_model(buf);
+      voo::h2l_buffer v_buf { dq.physical_device(), sizeof(vtx) * 1024 };
+      int v_count = load_model(v_buf);
+
+      voo::h2l_buffer x_buf { dq.physical_device(), sizeof(unsigned) * 1024 };
+      int x_count = load_indices(x_buf);
 
       auto pl = vee::create_pipeline_layout();
       auto gp = vee::create_graphics_pipeline({
@@ -80,16 +94,17 @@ struct lng : public vapp {
       extent_loop(dq.queue(), sw, [&] {
         sw.queue_one_time_submit(dq.queue(), [&](auto pcb) {
           if (!loaded) {
-            buf.setup_copy(*pcb);
+            v_buf.setup_copy(*pcb);
+            x_buf.setup_copy(*pcb);
             loaded = true;
           }
 
           auto scb = sw.cmd_render_pass({ *pcb });
           vee::cmd_set_viewport(*pcb, sw.extent());
           vee::cmd_set_scissor(*pcb, sw.extent());
-          vee::cmd_bind_vertex_buffers(*pcb, 0, buf.local_buffer());
+          vee::cmd_bind_vertex_buffers(*pcb, 0, v_buf.local_buffer());
           vee::cmd_bind_gr_pipeline(*pcb, *gp);
-          vee::cmd_draw(*pcb, count);
+          vee::cmd_draw(*pcb, v_count);
         });
       });
     });
