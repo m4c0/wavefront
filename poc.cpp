@@ -1,12 +1,17 @@
 #pragma leco app
 #pragma leco add_shader "poc.vert"
 #pragma leco add_shader "poc.frag"
+#pragma leco add_resource "model.obj"
 
 import dotz;
+import jojo;
+import sires;
 import traits;
 import vee;
 import voo;
 import vapp;
+
+import print;
 
 struct vtx {
   dotz::vec3 pos;
@@ -15,6 +20,12 @@ struct vtx {
 static unsigned load_model(voo::h2l_buffer & buf) {
   unsigned count {};
   voo::memiter<vtx> m { buf.host_memory(), &count };
+
+  jojo::readlines(sires::real_path_name("model.obj"), [&](auto line) {
+    if (line[0] != 'v' || line[1] != ' ') return;
+    putln(line);
+  });
+
   m += { .pos { -1, -1, 0 } };
   m += { .pos { +1, +1, 0 } };
   m += { .pos { +1, -1, 0 } };
