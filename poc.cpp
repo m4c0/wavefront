@@ -16,7 +16,15 @@ struct vtx {
   dotz::vec3 pos;
 };
 
-struct invalid_float {};
+struct invalid_number {};
+static constexpr int atoi(jute::view v) {
+  int res = 0;
+  for (auto c : v) {
+    if (c < '0' || c > '9') throw invalid_number {};
+    res = res * 10 + (c - '0');
+  }
+  return res;
+}
 static constexpr float atof(jute::view v) {
   float res = 0;
   int decimals = -1;
@@ -26,8 +34,8 @@ static constexpr float atof(jute::view v) {
     if (c == '.' && decimals == -1) {
       decimals = 0;
       continue;
-    } else if (c == '.') throw invalid_float {};
-    if (c < '0' || c > '9') throw invalid_float {};
+    } else if (c == '.') throw invalid_number {};
+    if (c < '0' || c > '9') throw invalid_number {};
 
     res = res * 10 + (c - '0');
 
@@ -55,10 +63,22 @@ static unsigned load_model(voo::h2l_buffer & buf) {
 
 static unsigned load_indices(voo::h2l_buffer & buf) {
   unsigned count {};
-  voo::memiter<vtx> m { buf.host_memory(), &count };
+  voo::memiter<unsigned> m { buf.host_memory(), &count };
 
   jojo::readlines(sires::real_path_name("model.obj"), [&](auto line) {
     if (line[0] != 'f' || line[1] != ' ') return;
+    auto [f, fr] = line.split(' ');
+    auto [v0, v0r] = fr.split(' ');
+    auto [v1, v1r] = v0r.split(' ');
+    auto [v2, v2r] = v1r.split(' ');
+    auto [v3, v3r] = v2r.split(' ');
+
+    auto i0 = atoi(v0.split('/').before);
+    auto i1 = atoi(v1.split('/').before);
+    auto i2 = atoi(v2.split('/').before);
+    auto i3 = atoi(v3.split('/').before);
+    m += i0 - 1U; m += i1 - 1U; m += i2 - 1U;
+    if (i3) m += i3 - 1U; m += i1 - 1U; m += i2 - 1U;
   });
 
   return count;
@@ -72,7 +92,7 @@ struct lng : public vapp {
 
       voo::h2l_buffer x_buf {
         dq.physical_device(),
-        sizeof(unsigned) * 1024,
+        sizeof(unsigned) * 4096,
         vee::buffer_usage::index_buffer
       };
       int x_count = load_indices(x_buf);
