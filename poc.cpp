@@ -45,7 +45,29 @@ static constexpr float atof(jute::view v) {
   return negative ? -res : res;
 }
 
-static unsigned load_model(voo::h2l_buffer & buf) {
+static auto count_points() {
+  struct {
+    unsigned v_count {};
+    unsigned x_count {};
+  } res {};
+
+  jojo::readlines(sires::real_path_name("model.obj"), [&](auto line) {
+    if (line.size() < 2) return;
+    if (line[0] == 'v' && line[1] == ' ') res.v_count++;
+    if (line[0] == 'f' && line[1] == ' ') {
+      res.x_count += 3;
+      if (line.subview(1).after
+          .split(' ').after
+          .split(' ').after
+          .split(' ').after
+          .size()) res.x_count += 3;
+    }
+  });
+
+  return res;
+}
+
+static void load_model(voo::h2l_buffer & buf) {
   unsigned count {};
   voo::memiter<vtx> m { buf.host_memory(), &count };
 
@@ -58,11 +80,9 @@ static unsigned load_model(voo::h2l_buffer & buf) {
     dotz::vec3 p { atof(x), atof(y), atof(z) };
     m += { .pos = p * 100.0 };
   });
-
-  return count;
 }
 
-static unsigned load_indices(voo::h2l_buffer & buf) {
+static void load_indices(voo::h2l_buffer & buf) {
   unsigned count {};
   voo::memiter<unsigned> m { buf.host_memory(), &count };
 
@@ -81,22 +101,23 @@ static unsigned load_indices(voo::h2l_buffer & buf) {
     m += i0 - 1U; m += i1 - 1U; m += i2 - 1U;
     if (i3) m += i3 - 1U; m += i0 - 1U; m += i2 - 1U;
   });
-
-  return count;
 }
 
 struct lng : public vapp {
   void run() override {
     main_loop("poc-voo", [&](auto & dq, auto & sw) {
-      voo::h2l_buffer v_buf { dq.physical_device(), sizeof(vtx) * 1024 };
+      auto [v_count, x_count] = count_points();
+
+      unsigned v_size = v_count * sizeof(vtx);
+      voo::h2l_buffer v_buf { dq.physical_device(), v_size };
       load_model(v_buf);
 
+      unsigned x_size = x_count * sizeof(unsigned);
       voo::h2l_buffer x_buf {
-        dq.physical_device(),
-        sizeof(unsigned) * 4096,
+        dq.physical_device(), x_size,
         vee::buffer_usage::index_buffer
       };
-      int x_count = load_indices(x_buf);
+      load_indices(x_buf);
 
       auto pl = vee::create_pipeline_layout();
       auto gp = vee::create_graphics_pipeline({
