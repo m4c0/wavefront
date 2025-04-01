@@ -79,7 +79,7 @@ static unsigned load_indices(voo::h2l_buffer & buf) {
     auto i2 = atoi(v2.split('/').before);
     auto i3 = atoi(v3.split('/').before);
     m += i0 - 1U; m += i1 - 1U; m += i2 - 1U;
-    if (i3) m += i3 - 1U; m += i1 - 1U; m += i2 - 1U;
+    if (i3) m += i3 - 1U; m += i0 - 1U; m += i2 - 1U;
   });
 
   return count;
