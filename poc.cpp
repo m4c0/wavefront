@@ -42,7 +42,7 @@ static constexpr float atof(jute::view v) {
     if (decimals >= 0) decimals++;
   }
   for (auto i = 0; i < decimals; i++) res /= 10;
-  return res;
+  return negative ? -res : res;
 }
 
 static unsigned load_model(voo::h2l_buffer & buf) {
