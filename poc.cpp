@@ -68,9 +68,13 @@ struct lng : public vapp {
   void run() override {
     main_loop("poc-voo", [&](auto & dq, auto & sw) {
       voo::h2l_buffer v_buf { dq.physical_device(), sizeof(vtx) * 1024 };
-      int v_count = load_model(v_buf);
+      load_model(v_buf);
 
-      voo::h2l_buffer x_buf { dq.physical_device(), sizeof(unsigned) * 1024 };
+      voo::h2l_buffer x_buf {
+        dq.physical_device(),
+        sizeof(unsigned) * 1024,
+        vee::buffer_usage::index_buffer
+      };
       int x_count = load_indices(x_buf);
 
       auto pl = vee::create_pipeline_layout();
@@ -103,8 +107,9 @@ struct lng : public vapp {
           vee::cmd_set_viewport(*pcb, sw.extent());
           vee::cmd_set_scissor(*pcb, sw.extent());
           vee::cmd_bind_vertex_buffers(*pcb, 0, v_buf.local_buffer());
+          vee::cmd_bind_index_buffer_u32(*pcb, x_buf.local_buffer());
           vee::cmd_bind_gr_pipeline(*pcb, *gp);
-          vee::cmd_draw(*pcb, v_count);
+          vee::cmd_draw_indexed(*pcb, x_count);
         });
       });
     });
