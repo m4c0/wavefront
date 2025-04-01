@@ -5,17 +5,37 @@
 
 import dotz;
 import jojo;
+import jute;
 import sires;
 import traits;
 import vee;
 import voo;
 import vapp;
 
-import print;
-
 struct vtx {
   dotz::vec3 pos;
 };
+
+struct invalid_float {};
+static constexpr float atof(jute::view v) {
+  float res = 0;
+  int decimals = -1;
+  bool negative = v[0] == '-';
+  if (negative) v = v.subview(1).after;
+  for (auto c : v) {
+    if (c == '.' && decimals == -1) {
+      decimals = 0;
+      continue;
+    } else if (c == '.') throw invalid_float {};
+    if (c < '0' || c > '9') throw invalid_float {};
+
+    res = res * 10 + (c - '0');
+
+    if (decimals >= 0) decimals++;
+  }
+  for (auto i = 0; i < decimals; i++) res /= 10;
+  return res;
+}
 
 static unsigned load_model(voo::h2l_buffer & buf) {
   unsigned count {};
@@ -23,16 +43,13 @@ static unsigned load_model(voo::h2l_buffer & buf) {
 
   jojo::readlines(sires::real_path_name("model.obj"), [&](auto line) {
     if (line[0] != 'v' || line[1] != ' ') return;
-    putln(line);
+    auto [v, vr] = line.split(' ');
+    auto [x, xr] = vr.split(' ');
+    auto [y, yr] = xr.split(' ');
+    auto [z, zr] = yr.split(' ');
+    m += { .pos { atof(x), atof(y), atof(z) } };
   });
 
-  m += { .pos { -1, -1, 0 } };
-  m += { .pos { +1, +1, 0 } };
-  m += { .pos { +1, -1, 0 } };
-
-  m += { .pos { -1, -1, 0 } };
-  m += { .pos { +1, +1, 0 } };
-  m += { .pos { -1, +1, 0 } };
   return count;
 }
 
