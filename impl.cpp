@@ -58,7 +58,7 @@ hai::chain<wavefront::vtx> wavefront::read_model(jute::view model) {
     if (cmd == "v") {
       auto [z, zr] = yr.split(' ');
       dotz::vec3 p { atof(x), atof(y), atof(z) };
-      pos.push_back(p * 100.0);
+      pos.push_back(p);
     } else if (cmd == "vn") {
       auto [z, zr] = yr.split(' ');
       dotz::vec3 n { atof(x), atof(y), atof(z) };
