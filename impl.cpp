@@ -2,6 +2,7 @@ module wavefront;
 import jojo;
 import jute;
 import hai;
+import silog;
 import sires;
 
 struct invalid_number {};
@@ -99,6 +100,7 @@ wavefront::model_pair wavefront::load_model(vee::physical_device pd, jute::view 
   unsigned v_size = v_count * sizeof(wavefront::vtx);
   res.v_buffer = voo::h2l_buffer { pd, v_size };
   ::load_model(res.v_buffer, vs);
+  silog::log(silog::info, "Loaded model %.*s", static_cast<unsigned>(model.size()), model.begin());
   return res;
 }
 
