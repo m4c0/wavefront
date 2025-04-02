@@ -77,8 +77,8 @@ hai::chain<wavefront::vtx> wavefront::read_model(jute::view model) {
       if (!w.size()) return;
       auto v3 = read_vertex(pos, txt, nrm, w);
       vtx.push_back(v0);
-      vtx.push_back(v3);
       vtx.push_back(v2);
+      vtx.push_back(v3);
     }
   });
 
