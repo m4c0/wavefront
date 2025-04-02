@@ -15,32 +15,12 @@ import voo;
 import vapp;
 import wavefront;
 
-static void load_model(voo::h2l_buffer & buf, auto & vs) {
-  voo::mapmem mm { buf.host_memory() };
-  auto * m = static_cast<wavefront::vtx *>(*mm);
-  for (auto v : vs) *m++ = v;
-}
-
-static auto create_vbuffer(vee::physical_device pd) {
-  struct {
-    voo::h2l_buffer buffer;
-    unsigned count;
-  } res;
-  auto vs = wavefront::read_model("model.obj");
-
-  unsigned v_count = res.count = vs.size();
-  unsigned v_size = v_count * sizeof(wavefront::vtx);
-  res.buffer = voo::h2l_buffer { pd, v_size };
-  load_model(res.buffer, vs);
-  return res;
-}
-
 using wavefront::vtx;
 
 struct lng : public vapp {
   void run() override {
     main_loop("poc-voo", [&](auto & dq, auto & sw) {
-      auto [v_buf, v_count] = create_vbuffer(dq.physical_device());
+      auto [v_buf, v_count] = wavefront::load_model(dq.physical_device(), "model.obj");
 
       auto pl = vee::create_pipeline_layout({
         vee::vertex_push_constant_range<float>()

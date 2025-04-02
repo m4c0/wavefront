@@ -85,3 +85,21 @@ hai::chain<wavefront::vtx> wavefront::read_model(jute::view model) {
   return vtx;
 }
 
+static void load_model(voo::h2l_buffer & buf, auto & vs) {
+  voo::mapmem mm { buf.host_memory() };
+  auto * m = static_cast<wavefront::vtx *>(*mm);
+  for (auto v : vs) *m++ = v;
+}
+
+wavefront::model_pair wavefront::load_model(vee::physical_device pd, jute::view model) {
+  struct model_pair res {};
+  auto vs = wavefront::read_model(model);
+
+  unsigned v_count = res.v_count = vs.size();
+  unsigned v_size = v_count * sizeof(wavefront::vtx);
+  res.v_buffer = voo::h2l_buffer { pd, v_size };
+  ::load_model(res.v_buffer, vs);
+  return res;
+}
+
+

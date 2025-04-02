@@ -3,6 +3,7 @@ export module wavefront;
 import dotz;
 import jute;
 import hai;
+import voo;
 
 namespace wavefront {
   export struct vtx {
@@ -11,4 +12,10 @@ namespace wavefront {
     dotz::vec3 nrm;
   };
   export hai::chain<wavefront::vtx> read_model(jute::view model);
+
+  struct model_pair {
+    voo::h2l_buffer v_buffer;
+    unsigned v_count;
+  };
+  export model_pair load_model(vee::physical_device pd, jute::view model);
 }
