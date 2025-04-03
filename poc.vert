@@ -32,12 +32,11 @@ mat4 model_matrix(float angle) {
 }
 
 void main() {
-  vec3 p = pos * 100.0;
   vec4 cam = vec4(0, -2, -5, 0);
   mat4 proj = projection_matrix(fov_rad, aspect, near, far);
   mat4 view = view_matrix(cam.xyz, radians(cam.w), up);
   mat4 modl = model_matrix(time * 3);
-  vec4 pvec = vec4(p.x, -p.y, p.z, 1);
+  vec4 pvec = vec4(pos.x, -pos.y, pos.z, 1);
   gl_Position = pvec * modl * view * proj;
   f_txt = txt;
   f_nrm = nrm;
