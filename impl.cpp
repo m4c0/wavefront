@@ -6,33 +6,6 @@ import silog;
 import sires;
 
 struct invalid_number {};
-static constexpr int atoi(jute::view v) {
-  int res = 0;
-  for (auto c : v) {
-    if (c < '0' || c > '9') throw invalid_number {};
-    res = res * 10 + (c - '0');
-  }
-  return res;
-}
-static constexpr float atof(jute::view v) {
-  float res = 0;
-  int decimals = -1;
-  bool negative = v[0] == '-';
-  if (negative) v = v.subview(1).after;
-  for (auto c : v) {
-    if (c == '.' && decimals == -1) {
-      decimals = 0;
-      continue;
-    } else if (c == '.') throw invalid_number {};
-    if (c < '0' || c > '9') throw invalid_number {};
-
-    res = res * 10 + (c - '0');
-
-    if (decimals >= 0) decimals++;
-  }
-  for (auto i = 0; i < decimals; i++) res /= 10;
-  return negative ? -res : res;
-}
 
 static wavefront::vtx read_vertex(auto & pos, auto & txt, auto & nrm, jute::view vtn) {
   auto [v, vr] = vtn.split('/');
@@ -40,9 +13,9 @@ static wavefront::vtx read_vertex(auto & pos, auto & txt, auto & nrm, jute::view
   auto [n, nr] = tr.split('/');
   
   return wavefront::vtx {
-    .pos = pos.seek(atoi(v) - 1),
-    .txt = txt.seek(atoi(t) - 1),
-    .nrm = nrm.seek(atoi(n) - 1),
+    .pos = pos.seek(jute::to_u32(v) - 1),
+    .txt = txt.seek(jute::to_u32(t) - 1),
+    .nrm = nrm.seek(jute::to_u32(n) - 1),
   };
 }
 hai::chain<wavefront::vtx> wavefront::read_model(jute::view model) {
@@ -58,14 +31,14 @@ hai::chain<wavefront::vtx> wavefront::read_model(jute::view model) {
     auto [y, yr] = xr.split(' ');
     if (cmd == "v") {
       auto [z, zr] = yr.split(' ');
-      dotz::vec3 p { atof(x), atof(y), atof(z) };
+      dotz::vec3 p { jute::to_f(x), jute::to_f(y), jute::to_f(z) };
       pos.push_back(p);
     } else if (cmd == "vn") {
       auto [z, zr] = yr.split(' ');
-      dotz::vec3 n { atof(x), atof(y), atof(z) };
+      dotz::vec3 n { jute::to_f(x), jute::to_f(y), jute::to_f(z) };
       nrm.push_back(n);
     } else if (cmd == "vt") {
-      txt.push_back({ atof(x), atof(y) });
+      txt.push_back({ jute::to_f(x), jute::to_f(y) });
     } else if (cmd == "f") {
       auto [z, zr] = yr.split(' ');
       auto [w, wr] = zr.split(' ');
