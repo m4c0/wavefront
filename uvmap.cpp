@@ -26,6 +26,7 @@ struct lng : public vapp {
       auto gp = vee::create_graphics_pipeline({
         .pipeline_layout = *pl,
         .render_pass = dq.render_pass(),
+        .polygon_mode = VK_POLYGON_MODE_LINE,
         .back_face_cull = false,
         .shaders {
           voo::shader("uvmap.vert.spv").pipeline_vert_stage(),
@@ -47,7 +48,10 @@ struct lng : public vapp {
             loaded = true;
           }
 
-          auto scb = sw.cmd_render_pass({ *pcb });
+          auto scb = sw.cmd_render_pass({
+            .command_buffer = *pcb,
+            .clear_colours { vee::clear_colour({}) },
+          });
           vee::cmd_set_viewport(*pcb, sw.extent());
           vee::cmd_set_scissor(*pcb, sw.extent());
           vee::cmd_bind_vertex_buffers(*pcb, 0, v_buf.local_buffer());
