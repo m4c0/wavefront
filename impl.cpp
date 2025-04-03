@@ -3,7 +3,6 @@ import jojo;
 import jute;
 import hai;
 import silog;
-import sires;
 
 struct invalid_number {};
 
@@ -24,7 +23,7 @@ hai::chain<wavefront::vtx> wavefront::read_model(jute::view model) {
   hai::chain<dotz::vec3> nrm { 10240 };
   hai::chain<wavefront::vtx> vtx { 102400 };
 
-  jojo::readlines(sires::real_path_name(model), [&](auto line) {
+  jojo::readlines(model, [&](auto line) {
     if (line.size() < 2) return;
     auto [cmd, vr] = line.split(' ');
     auto [x, xr] = vr.split(' ');
@@ -76,5 +75,4 @@ wavefront::model_pair wavefront::load_model(vee::physical_device pd, jute::view 
   silog::log(silog::info, "Loaded model %.*s", static_cast<unsigned>(model.size()), model.begin());
   return res;
 }
-
 
