@@ -8,6 +8,7 @@ import jojo;
 import jute;
 import sires;
 import sitime;
+import stubby;
 import traits;
 import vee;
 import voo;
@@ -53,15 +54,23 @@ int main() {
     voo::cmd_buf_one_time_submit pcb { cb.cb() };
     v_buf.setup_copy(*pcb);
 
-    voo::cmd_render_pass scb { ofs.render_pass_begin({
-      .command_buffer = *pcb,
-      .clear_colours { vee::clear_colour({}) },
-    })};
-    vee::cmd_set_viewport(*pcb, ext);
-    vee::cmd_set_scissor(*pcb, ext);
-    vee::cmd_bind_vertex_buffers(*pcb, 0, v_buf.local_buffer());
-    vee::cmd_bind_gr_pipeline(*pcb, *gp);
-    vee::cmd_draw(*pcb, v_count);
+    {
+      voo::cmd_render_pass scb { ofs.render_pass_begin({
+        .command_buffer = *pcb,
+        .clear_colours { vee::clear_colour({1,1,1,1}) },
+      })};
+      vee::cmd_set_viewport(*pcb, ext);
+      vee::cmd_set_scissor(*pcb, ext);
+      vee::cmd_bind_vertex_buffers(*pcb, 0, v_buf.local_buffer());
+      vee::cmd_bind_gr_pipeline(*pcb, *gp);
+      vee::cmd_draw(*pcb, v_count);
+    }
+    ofs.cmd_copy_to_host(*pcb);
   }
+  q.queue_submit({ .command_buffer = cb.cb() });
   vee::device_wait_idle();
+
+  auto m = ofs.map_host();
+  auto mm = static_cast<stbi::pixel *>(*m);
+  stbi::write_rgba_unsafe("out/model.png", ext.width, ext.height, mm);
 }
