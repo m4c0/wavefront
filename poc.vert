@@ -4,6 +4,7 @@
 
 layout(push_constant) uniform upc {
   float time;
+  float aspect;
 };
 
 layout(location = 0) in vec3 pos;
@@ -14,7 +15,6 @@ layout(location = 0) out vec2 f_txt;
 layout(location = 1) out vec3 f_nrm;
 
 const float fov_rad = radians(90);
-const float aspect = 1;
 const float far = 100.0;
 const float near = 0.01;
 

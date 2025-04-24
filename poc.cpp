@@ -17,13 +17,18 @@ import wavefront;
 
 using wavefront::vtx;
 
+struct upc {
+  float ms;
+  float aspect;
+};
+
 struct lng : public vapp {
   void run() override {
     main_loop("poc-voo", [&](auto & dq, auto & sw) {
       auto [v_buf, v_count] = wavefront::load_model(dq.physical_device(), "model.obj");
 
       auto pl = vee::create_pipeline_layout({
-        vee::vertex_push_constant_range<float>()
+        vee::vertex_push_constant_range<upc>()
       });
       auto gp = vee::create_graphics_pipeline({
         .pipeline_layout = *pl,
@@ -50,14 +55,17 @@ struct lng : public vapp {
             v_buf.setup_copy(*pcb);
             loaded = true;
           }
-          float ms = t.millis() / 1000.0;
+          upc pc {
+            .ms = t.millis() / 1000.0f,
+            .aspect = sw.aspect(),
+          };
 
           auto scb = sw.cmd_render_pass({ *pcb });
           vee::cmd_set_viewport(*pcb, sw.extent());
           vee::cmd_set_scissor(*pcb, sw.extent());
           vee::cmd_bind_vertex_buffers(*pcb, 0, v_buf.local_buffer());
           vee::cmd_bind_gr_pipeline(*pcb, *gp);
-          vee::cmd_push_vertex_constants(*pcb, *pl, &ms);
+          vee::cmd_push_vertex_constants(*pcb, *pl, &pc);
           vee::cmd_draw(*pcb, v_count);
         });
       });
