@@ -32,7 +32,7 @@ mat4 model_matrix(float angle) {
 }
 
 void main() {
-  vec4 cam = vec4(0, -2, -5, 0);
+  vec4 cam = vec4(0, 0, -5, 0);
   mat4 proj = projection_matrix(fov_rad, aspect, near, far);
   mat4 view = view_matrix(cam.xyz, radians(cam.w), up);
   mat4 modl = model_matrix(time * 3);
