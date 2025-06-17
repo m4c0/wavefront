@@ -58,8 +58,8 @@ hai::chain<wavefront::vtx> wavefront::read_model(jute::view model) {
   return vtx;
 }
 
-static void load_model(voo::h2l_buffer & buf, auto & vs) {
-  voo::mapmem mm { buf.host_memory() };
+static void load_model(auto mem, auto & vs) {
+  voo::mapmem mm { mem };
   auto * m = static_cast<wavefront::vtx *>(*mm);
   for (auto v : vs) *m++ = v;
 }
@@ -70,8 +70,9 @@ wavefront::model_pair wavefront::load_model(vee::physical_device pd, jute::view 
 
   unsigned v_count = res.v_count = vs.size();
   unsigned v_size = v_count * sizeof(wavefront::vtx);
-  res.v_buffer = voo::h2l_buffer { pd, v_size };
-  ::load_model(res.v_buffer, vs);
+  res.v_buffer = voo::bound_buffer::create_from_host(pd, v_size,
+      vee::buffer_usage::transfer_src_buffer, vee::buffer_usage::vertex_buffer);
+  ::load_model(*res.v_buffer.memory, vs);
   silog::log(silog::info, "Loaded model %.*s", static_cast<unsigned>(model.size()), model.begin());
   return res;
 }

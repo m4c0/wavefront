@@ -52,7 +52,6 @@ int main() {
 
   {
     voo::cmd_buf_one_time_submit pcb { cb.cb() };
-    v_buf.setup_copy(*pcb);
 
     {
       voo::cmd_render_pass scb { ofs.render_pass_begin({
@@ -61,7 +60,7 @@ int main() {
       })};
       vee::cmd_set_viewport(*pcb, ext);
       vee::cmd_set_scissor(*pcb, ext);
-      vee::cmd_bind_vertex_buffers(*pcb, 0, v_buf.local_buffer());
+      vee::cmd_bind_vertex_buffers(*pcb, 0, *v_buf.buffer);
       vee::cmd_bind_gr_pipeline(*pcb, *gp);
       vee::cmd_draw(*pcb, v_count);
     }

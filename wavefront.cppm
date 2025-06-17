@@ -14,7 +14,7 @@ namespace wavefront {
   export hai::chain<wavefront::vtx> read_model(jute::view model);
 
   struct model_pair {
-    voo::h2l_buffer v_buffer;
+    voo::bound_buffer v_buffer;
     unsigned v_count;
   };
   export model_pair load_model(vee::physical_device pd, jute::view model);

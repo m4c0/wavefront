@@ -47,14 +47,9 @@ struct lng : public vapp {
         },
       });
 
-      bool loaded = false;
       sitime::stopwatch t {};
       extent_loop(dq.queue(), sw, [&] {
         sw.queue_one_time_submit(dq.queue(), [&](auto pcb) {
-          if (!loaded) {
-            v_buf.setup_copy(*pcb);
-            loaded = true;
-          }
           upc pc {
             .ms = t.millis() / 1000.0f,
             .aspect = sw.aspect(),
@@ -63,7 +58,7 @@ struct lng : public vapp {
           auto scb = sw.cmd_render_pass({ *pcb });
           vee::cmd_set_viewport(*pcb, sw.extent());
           vee::cmd_set_scissor(*pcb, sw.extent());
-          vee::cmd_bind_vertex_buffers(*pcb, 0, v_buf.local_buffer());
+          vee::cmd_bind_vertex_buffers(*pcb, 0, *v_buf.buffer);
           vee::cmd_bind_gr_pipeline(*pcb, *gp);
           vee::cmd_push_vertex_constants(*pcb, *pl, &pc);
           vee::cmd_draw(*pcb, v_count);
